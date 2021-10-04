@@ -14,7 +14,7 @@ class QTPro extends EventEmitter {
     constructor({ip, model, port=23, reconnect=true}) {
         super();
 
-        this._debug = true;
+        this._debug = false;
         this.ip = ip;
         this.port = port;
         this._reconnect = reconnect;
@@ -310,8 +310,8 @@ class QTPro extends EventEmitter {
         if (!(parameter in api.system.get)) {
             throw new Error(`Invalid system parameter to get: ${parameter}`)
         }
-        this.reqToSend({type:'system', parameter}, (res)=> {
-            if (typeof cb == 'function') cb(this._parseReturnValues(res, regexp, api.system.get))
+        this._get({type:'system', parameter}, (res) => {
+            cb(res)
         });
     }
 
@@ -355,8 +355,8 @@ class QTPro extends EventEmitter {
         if (!(parameter in api.zone.get)) {
             throw new Error(`Invalid zone parameter to get: ${parameter}`)
         }
-        this.reqToSend({type:'zone', zoneID: zone, parameter}, (res)=> {
-            if (typeof cb == 'function') cb(this._parseReturnValues(res, regexp, api.system.get))
+        this._get({type:'zone', zoneID: zone, parameter}, (res) => {
+            cb(res)
         });
     }
 

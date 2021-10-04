@@ -1,6 +1,6 @@
 {
   "name": "cambridge-sound-qtpro",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Node package for communicating with Cambridge Sound Qt series sound masking systems through their telnet-based command line interface",
   "main": "index.js",
   "dependencies": {

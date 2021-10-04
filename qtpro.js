@@ -10,6 +10,10 @@ class QTPro extends EventEmitter {
      * @param {string} params.model - The model of Qt Pro that's being connected to, options are 'QT300' or 'QT600'
      * @param {number} [params.port=23] - The port number the unit is listening on
      * @param {boolean} [params.reconnect=true] - If the connection should attempt to re-establish after closing
+     * @fires QTPro#ready - When the connection is ready for data to be sent/received
+     * @fires QTPro#disconnected - When the connection is not active
+     * @fires QTPro#connecting - While the connection attempt it being made
+     * @fires QTPro#error - On a connection error
      */
     constructor({ip, model, port=23, reconnect=true}) {
         super();
@@ -20,7 +24,8 @@ class QTPro extends EventEmitter {
         this._reconnect = reconnect;
         this._reconnectTimeout = 5000;
 
-        this.ready = false;
+        this.status = 'disconnected';
+
         if (model === 'QT300') {
             this.model = model;
             this.numZones = 3;
@@ -47,7 +52,6 @@ class QTPro extends EventEmitter {
 
         this.onReady = async (prompt) => {
             if (this._debug) console.log('Ready')
-            this.ready = true;
             // console.log(this.connection.state)
             // console.log(prompt) // Cambridge Sound Management Telnet Window, v1.0
             // QT-300 looks like it gets something stuck in it's receive buffer on connecting. send \r to get a clean prompt back
@@ -59,7 +63,10 @@ class QTPro extends EventEmitter {
                 this.reqToSend('', ()=>{}); // just send \r\n every this._keepAliveTime millis to keep the connection open
             }, this._keepAliveTime)
 
-            setTimeout(() => { this.emit('ready') }, 100); // add a small delay before being ready to send. seems to be a problem when sending data immediately after the connection 'ready' event is received
+            setTimeout(() => { 
+                this.status = 'ready';
+                this.emit(this.status) 
+            }, 100); // add a small delay before being ready to send. seems to be a problem when sending data immediately after the connection 'ready' event is received
         }
 
         this.onTimeout = () => {
@@ -81,12 +88,18 @@ class QTPro extends EventEmitter {
 
         this.onError = () => {
             if (this._debug) console.log('Connection error');
+            this.status = 'error';
+            this.emit(this.status) 
         };
 
         this.connection = new Telnet();
         this.connect();
     }
 
+    /**
+     * Attempts to connect to the Qt Pro unit. This is run automatically on class instantiation but 
+     * can be used manually to reconnect if reconnect is set to false in the constructor params
+     */
     async connect() {
         // console.log(this.connection.state)
         const params = {
@@ -111,6 +124,8 @@ class QTPro extends EventEmitter {
         this.connection.on('error', this.onError);
 
         try {
+            this.status = 'connecting';
+            this.emit(this.status);
             await this.connection.connect(params);
         } catch (error) {
             console.error(`Could not connect to QtPro at ${this.ip}`)
@@ -123,14 +138,9 @@ class QTPro extends EventEmitter {
     }
 
     _cleanup() {
-        this.ready = false;
+        this.status = 'disconnected';
+        this.emit(this.status);
         if (this._keepAliveInterval) clearInterval(this._keepAliveInterval);
-    }
-
-    async reset(cb) {
-        this.reqToSend('ZYXWvU', (res)=> {
-            cb(res.replace(/\r\n/,'') == '{ACK,ZYXWvU}')
-        });
     }
 
     async reqToSend(command, cb) {
@@ -163,6 +173,16 @@ class QTPro extends EventEmitter {
             console.error('QtPro._send error: ',error)
             this.emit('readyToSend')
         }
+    }
+
+    /**
+     * Sends a software reset command to the QtPro unit. If reconnect is set to false in the constructor params, the Qt Pro connection will be lost and not recovered
+     * @param {setCallback} [cb] - The callback to run against the response
+     */
+    reset(cb) {
+        this.reqToSend('ZYXWvU', (res)=> {
+            cb(res.replace(/\r\n/,'') == '{ACK,ZYXWvU}')
+        });
     }
 
     /**

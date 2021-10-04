@@ -89,9 +89,16 @@ qtpro.on('ready', () => {
 
 ## QTPro
 **Kind**: global class  
+* **Emits**:
+	* <code>QTPro#event:ready - When the connection is ready for data to be sent/received</code>
+	* <code>QTPro#event:disconnected - When the connection is not active</code>
+	* <code>QTPro#event:connecting - While the connection attempt it being made</code>
+	* <code>QTPro#event:error - On a connection error</code> 
 
 * [QTPro](#QTPro)
     * [new QTPro(params)](#new_QTPro_new)
+    * [.connect()](#QTPro+connect)
+    * [.reset([cb])](#QTPro+reset)
     * [.getAllSystemParams([cb])](#QTPro+getAllSystemParams)
     * [.getSystemParam(parameter, [cb])](#QTPro+getSystemParam)
     * [.setSystemParam(parameter, value, [cb])](#QTPro+setSystemParam)
@@ -112,6 +119,23 @@ Create a QTPro unit.
 | params.model | <code>string</code> |  | The model of QTPro connecting to, options are 'QT300' or 'QT600' |
 | [params.port] | <code>number</code> | <code>23</code> | The port number the unit is listening on |
 | [params.reconnect] | <code>boolean</code> | <code>true</code> | If the connection should attempt to re-establish after closing |
+<a name="QTPro+connect"></a>
+
+### qtPro.connect()
+Attempts to connect to the Qt Pro unit. This is run automatically on class instantiation but 
+can be used manually to reconnect if `reconnect` is set to false in the constructor `params`
+
+**Kind**: instance method of [<code>QTPro</code>](#QTPro)  
+<a name="QTPro+reset"></a>
+
+### qtPro.reset([cb])
+Sends a software reset command to the QtPro unit. If `reconnect` is set to false in the constructor `params`, the Qt Pro connection will be lost and not recovered
+
+**Kind**: instance method of [<code>QTPro</code>](#QTPro)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [cb] | [<code>setCallback</code>](#setCallback) | The callback to run against the response |
 
 <a name="QTPro+getAllSystemParams"></a>
 

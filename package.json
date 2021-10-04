@@ -1,0 +1,29 @@
+{
+  "name": "cambridge-sound-qtpro",
+  "version": "0.1.0",
+  "description": "Node package for communicating with Cambridge Sound Qt series sound masking systems through their telnet-based command line interface",
+  "main": "index.js",
+  "dependencies": {
+    "telnet-client": "^1.4.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CommLink-Integration/cambridge-sound-qtpro.git"
+  },
+  "keywords": [
+    "qtpro",
+    "qt",
+    "cambridge",
+    "sound",
+    "masking"
+  ],
+  "author": "Hunter Grayson",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/CommLink-Integration/cambridge-sound-qtpro/issues"
+  },
+  "homepage": "https://github.com/CommLink-Integration/cambridge-sound-qtpro#readme",
+  "devDependencies": {
+    "jsdoc-to-markdown": "^7.0.1"
+  }
+}

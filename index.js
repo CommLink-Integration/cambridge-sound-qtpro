@@ -30,7 +30,7 @@ qtpro.on('ready', () => {
         value: 'CommLink Integration Corp HQ'
     };
     qtpro.setSystemParam(setSystemArgs, (res) => {
-        console.log(`The unit name was${res ? '' : 'not'} set to ${setSystemArgs.value}`);
+        console.log(`The unit name was${res ? '' : ' not'} set to ${setSystemArgs.value}`);
     });
 
     const setZoneArgs = {
@@ -39,7 +39,7 @@ qtpro.on('ready', () => {
         value: 10
     };
     qtpro.setZoneParam(setZoneArgs, (res) => {
-        console.log(`The minimum masking level for Zone 2 was${res ? '' : 'not'} set to ${setZoneArgs.value}`);
+        console.log(`The minimum masking level for Zone 2 was${res ? '' : ' not'} set to ${setZoneArgs.value}`);
     });
 
     qtpro.getAllSystemParams((res) => {
@@ -49,4 +49,6 @@ qtpro.on('ready', () => {
     qtpro.getAllZoneParams({zone: 0}, (res) => {
         console.log('Zone 1 parameters are:', res);
     });
+
+    setTimeout(() => { process.exit(0) }, 5000);
 });

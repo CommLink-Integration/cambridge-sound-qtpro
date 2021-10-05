@@ -75,7 +75,6 @@ class QTPro extends EventEmitter {
         };
 
         this.onClose = () => {
-            // TODO: add option to automatically attempt reconnect
             this._cleanup();
             if (this._debug) console.log('Connection closed');
             if (this._reconnect) {
@@ -102,9 +101,15 @@ class QTPro extends EventEmitter {
      */
     async connect() {
         // console.log(this.connection.state)
+        if (this._debug) console.log('Attempting to connect.')
+        if (this.status == 'ready' || this.status == 'connecting') {
+            if (this._debug) console.log(`Status is already ${this.status}. Stopping attempt to connect.`)
+            return;
+        }
+
         const params = {
             host: this.ip,
-            port: this.port || 23,
+            port: this.port,
             shellPrompt: '', // or negotiationMandatory: false
             timeout: this._keepAliveTime * 1.2, // this controls connect and idle timeout, ideally there would be a timeout for connecting but not for remaining idle
             ors: '\r',
@@ -199,11 +204,15 @@ class QTPro extends EventEmitter {
             header = api.headers.SYSTEM_GET
             api_section = api.system.get;
         } else if (type == 'zone' && zoneID !== undefined) {
-            if (zoneID > this.numZones - 1) return undefined
+            if (zoneID > this.numZones - 1) {
+                cb({[parameter]: undefined});
+                return;
+            }
             header = api.headers.ZONE_GET
             api_section = api.zone.get;
         } else {
-            return undefined
+            cb({[parameter]: undefined});
+            return;
         }
 
         const api_string = `${header}${api_section[parameter]}${zoneID !== undefined ? zoneID : ''}`
@@ -231,11 +240,15 @@ class QTPro extends EventEmitter {
             header = api.headers.SYSTEM_SET
             api_section = api.system.set;
         } else if (type == 'zone' && zoneID !== undefined) {
-            if (zoneID > this.numZones - 1) return undefined
+            if (zoneID > this.numZones - 1) {
+                cb({[parameter]: undefined});
+                return;
+            }
             header = api.headers.ZONE_SET
             api_section = api.zone.set;
         } else {
-            return undefined
+            cb({[parameter]: undefined});
+            return;
         }
         const arg_string = (argument !== undefined) ? `=${argument}` : '';
         const api_string = `${header}${api_section[parameter]}${zoneID !== undefined ? zoneID : ''}${arg_string}`

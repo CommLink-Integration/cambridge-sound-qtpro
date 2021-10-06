@@ -4,7 +4,7 @@ const api = require('./api');
 
 class QTPro extends EventEmitter {
     /**
-     * Create a QTPro unit.
+     * Create a Qt Pro unit.
      * @param {Object} params
      * @param {string} params.ip - The IP address of the unit
      * @param {string} params.model - The model of Qt Pro that's being connected to, options are 'QT300' or 'QT600'
@@ -33,7 +33,7 @@ class QTPro extends EventEmitter {
             this.model = model;
             this.numZones = 6;
         } else {
-            console.error(`Not a valid QTPro model identifier: ${model}`);
+            console.error(`Not a valid Qt Pro model identifier: ${model}`);
             return;
         }
 
@@ -51,21 +51,21 @@ class QTPro extends EventEmitter {
         })
 
         this.onReady = async (prompt) => {
-            if (this._debug) console.log('Ready')
+            if (this._debug) console.log('Ready');
             // console.log(this.connection.state)
             // console.log(prompt) // Cambridge Sound Management Telnet Window, v1.0
             // QT-300 looks like it gets something stuck in it's receive buffer on connecting. send \r to get a clean prompt back
             // This is even required when connecting over telnet manually
-            let res = await this.connection.send('', {waitfor: '{NAK}\r\n'}) 
-            if (this._debug) console.log(res)
+            let res = await this.connection.send('', {waitfor: '{NAK}\r\n'});
+            if (this._debug) console.log(res);
             
             this._keepAliveInterval = setInterval(() => {
                 this.reqToSend('', ()=>{}); // just send \r\n every this._keepAliveTime millis to keep the connection open
-            }, this._keepAliveTime)
+            }, this._keepAliveTime);
 
             setTimeout(() => { 
                 this.status = 'ready';
-                this.emit(this.status) 
+                this.emit(this.status);
             }, 100); // add a small delay before being ready to send. seems to be a problem when sending data immediately after the connection 'ready' event is received
         }
 
@@ -88,7 +88,7 @@ class QTPro extends EventEmitter {
         this.onError = () => {
             if (this._debug) console.log('Connection error');
             this.status = 'error';
-            this.emit(this.status) 
+            this.emit(this.status);
         };
 
         this.connection = new Telnet();
@@ -101,16 +101,16 @@ class QTPro extends EventEmitter {
      */
     async connect() {
         // console.log(this.connection.state)
-        if (this._debug) console.log('Attempting to connect.')
+        if (this._debug) console.log('Attempting to connect.');
         if (this.status == 'ready' || this.status == 'connecting') {
-            if (this._debug) console.log(`Status is already ${this.status}. Stopping attempt to connect.`)
+            if (this._debug) console.log(`Status is already ${this.status}. Stopping attempt to connect.`);
             return;
         }
 
         const params = {
             host: this.ip,
             port: this.port,
-            shellPrompt: '', // or negotiationMandatory: false
+            shellPrompt: '',
             timeout: this._keepAliveTime * 1.2, // this controls connect and idle timeout, ideally there would be a timeout for connecting but not for remaining idle
             ors: '\r',
             initialLFCR: true,
@@ -133,7 +133,7 @@ class QTPro extends EventEmitter {
             this.emit(this.status);
             await this.connection.connect(params);
         } catch (error) {
-            console.error(`Could not connect to QtPro at ${this.ip}`)
+            console.error(`Could not connect to Qt Pro at ${this.ip}`);
         }
     }
 
@@ -151,8 +151,8 @@ class QTPro extends EventEmitter {
     async reqToSend(command, cb) {
         // if send buffer is empty, call this._send
         // else add command, cb to buffer
-        if (this._readyToSend) this._send(command, cb)
-        else this._sendBuffer.push({command, cb})
+        if (this._readyToSend) this._send(command, cb);
+        else this._sendBuffer.push({command, cb});
 
     }
 
@@ -163,35 +163,34 @@ class QTPro extends EventEmitter {
         // };
         this._readyToSend = false;
 
-        if (this._debug) console.log(`Sending ${data} to QtPro`);
+        if (this._debug) console.log(`Sending ${data} to Qt Pro`);
         try {
-            // since connect params timeout is 0, need to do something else here to make sure
-            // we get a response in a timely manner and error if not received
-            let res = await this.connection.send(data, {waitfor: '\r\n'})
-            if (this._debug) console.log('async result:', res)
+            let res = await this.connection.send(data, {waitfor: '\r\n'});
+            if (this._debug) console.log('async result:', res);
             if (typeof cb == 'function' ) {
-                cb(res)
-                this.emit('readyToSend')
+                cb(res);
+                this.emit('readyToSend');
             }
-            else throw new Error('Callback is not a function')
+            else throw new Error('Callback is not a function');
         } catch (error) {
-            console.error('QtPro._send error: ',error)
-            this.emit('readyToSend')
+            console.error('QtPro._send error: ',error);
+            this.emit('readyToSend');
         }
     }
 
     /**
-     * Sends a software reset command to the QtPro unit. If reconnect is set to false in the constructor params, the Qt Pro connection will be lost and not recovered
+     * Sends a software reset command to the Qt Pro unit. If reconnect is set to false in the
+     * constructor params, the Qt Pro connection will be lost and not recovered
      * @param {setCallback} [cb] - The callback to run against the response
      */
     reset(cb) {
         this.reqToSend('ZYXWvU', (res)=> {
-            cb(res.replace(/\r\n/,'') == '{ACK,ZYXWvU}')
+            cb(res.replace(/\r\n/,'') == '{ACK,ZYXWvU}');
         });
     }
 
     /**
-     * Sends a get command to the QtPro unit and returns a parsed response object
+     * Sends a get command to the Qt Pro unit and returns a parsed response object
      * @param {string} type - The type of command, options are 'system' or 'zone'
      * @param {string} parameter - The parameter to request
      * @param {Number} zoneID - The zone number the parameter will be requested from. Required if type is 'zone'
@@ -201,32 +200,32 @@ class QTPro extends EventEmitter {
         let api_section = {};
 
         if (type == 'system') {
-            header = api.headers.SYSTEM_GET
+            header = api.headers.SYSTEM_GET;
             api_section = api.system.get;
         } else if (type == 'zone' && zoneID !== undefined) {
             if (zoneID > this.numZones - 1) {
                 cb({[parameter]: undefined});
                 return;
             }
-            header = api.headers.ZONE_GET
+            header = api.headers.ZONE_GET;
             api_section = api.zone.get;
         } else {
             cb({[parameter]: undefined});
             return;
         }
 
-        const api_string = `${header}${api_section[parameter]}${zoneID !== undefined ? zoneID : ''}`
+        const api_string = `${header}${api_section[parameter]}${zoneID !== undefined ? zoneID : ''}`;
         const regexp = `{${header}(.*)}`;
 
         this.reqToSend(api_string, (res)=> {
-            if (this._debug) console.log(res)
-            cb(this._parseReturnValues(res, regexp, api_section))
+            if (this._debug) console.log(res);
+            cb(this._parseReturnValues(res, regexp, api_section));
         });
     }
 
 
     /**
-     * Sends a set command to the QtPro unit and returns a parsed response object
+     * Sends a set command to the Qt Pro unit and returns a parsed response object
      * @param {string} type - The type of command, options are 'system' or 'zone'
      * @param {string} parameter - The parameter to set
      * @param {string} argument - The value the parameter will be set to
@@ -237,34 +236,34 @@ class QTPro extends EventEmitter {
         let api_section = {};
 
         if (type == 'system') {
-            header = api.headers.SYSTEM_SET
+            header = api.headers.SYSTEM_SET;
             api_section = api.system.set;
         } else if (type == 'zone' && zoneID !== undefined) {
             if (zoneID > this.numZones - 1) {
                 cb({[parameter]: undefined});
                 return;
             }
-            header = api.headers.ZONE_SET
+            header = api.headers.ZONE_SET;
             api_section = api.zone.set;
         } else {
             cb({[parameter]: undefined});
             return;
         }
         const arg_string = (argument !== undefined) ? `=${argument}` : '';
-        const api_string = `${header}${api_section[parameter]}${zoneID !== undefined ? zoneID : ''}${arg_string}`
+        const api_string = `${header}${api_section[parameter]}${zoneID !== undefined ? zoneID : ''}${arg_string}`;
         const regexp = `{ACK,(.*)}`;
 
         this.reqToSend(api_string, (res)=> {
-            if (this._debug) console.log(res)
-            cb(this._parseReturnValues(res, regexp, api_section))
+            if (this._debug) console.log(res);
+            cb(this._parseReturnValues(res, regexp, api_section));
         });
 
     }
 
     /**
-     * Parses the values returned from the QtPro unit into a more readable/actionable format
+     * Parses the values returned from the Qt Pro unit into a more readable/actionable format
      * for use further up the chain
-     * @param {string} response - The response given from the QtPro
+     * @param {string} response - The response given from the Qt Pro
      * @param {RegExp} regexp - Regular expression for stripping all but the key/value pairs
      * @param {object} keyLookupObject - The object that will be used to do a reverse lookup
      */
@@ -282,18 +281,18 @@ class QTPro extends EventEmitter {
         let match = response.match(regexp);
         if (match) {
             // console.log(match)
-            let returnValues = {}
-            const allParameters = match[1].split(',')
+            let returnValues = {};
+            const allParameters = match[1].split(',');
             allParameters.forEach(p => {
                 let parameter = p.split('=');
                 // look if we need to strip off an appended zone number from the parameter
-                parameter[0] = parameter[0].replace(/(\w*)\d/,'$1')
-                let key = this.getKeyByValue(keyLookupObject, parameter[0])
-                if (key) returnValues[key] = parameter[1]
+                parameter[0] = parameter[0].replace(/(\w*)\d/,'$1');
+                let key = this.getKeyByValue(keyLookupObject, parameter[0]);
+                if (key) returnValues[key] = parameter[1];
             })
-            return returnValues
+            return returnValues;
         } else {
-            return undefined
+            return undefined;
         }
     }
 
@@ -305,7 +304,7 @@ class QTPro extends EventEmitter {
      * Callback for requesting one system or zone parameter
      *
      * @callback getOneCallback
-     * @param {object} res - an object with a single property, the value of the parameter property passed to the get* method, and it's current value according the QTPro unit
+     * @param {object} res - an object with a single property, the value of the parameter property passed to the get* method, and it's current value according the Qt Pro unit
      */
 
     /**
@@ -330,33 +329,33 @@ class QTPro extends EventEmitter {
     getAllSystemParams(cb) {
         const regexp = /{ALSYS=(.*)}/;
         this.reqToSend(api.system.get.all, (res)=> {
-            if (typeof cb == 'function') cb(this._parseReturnValues(res, regexp, api.system.get))
+            if (typeof cb == 'function') cb(this._parseReturnValues(res, regexp, api.system.get));
         });
     }
 
     /**
-     * Sends a get command to the QtPro unit and returns a parsed response object
+     * Sends a get command to the Qt Pro unit and returns a parsed response object
      * @param {string} parameter - The parameter to get. Valid values are in api.system.get
      * @param {getOneCallback} [cb] - The callback to run against the response
      */
     getSystemParam({parameter}, cb) {
         if (!(parameter in api.system.get)) {
-            throw new Error(`Invalid system parameter to get: ${parameter}`)
+            throw new Error(`Invalid system parameter to get: ${parameter}`);
         }
         this._get({type:'system', parameter}, (res) => {
-            cb(res)
+            cb(res);
         });
     }
 
     /**
-     * Sends a set command to the QtPro unit
+     * Sends a set command to the Qt Pro unit
      * @param {string} parameter - The parameter to set. Valid values are in api.system.set
      * @param {string} value - The value the parameter will be set to
      * @param {setCallback} [cb] - The callback to run against the response
      */
     setSystemParam({parameter, value}, cb) {
         if (!(parameter in api.system.set)) {
-            throw new Error(`Invalid system parameter to set: ${parameter}`)
+            throw new Error(`Invalid system parameter to set: ${parameter}`);
         }
 
         this._set({type:'system', parameter, argument: value}, (parsed) => {
@@ -374,27 +373,27 @@ class QTPro extends EventEmitter {
     getAllZoneParams({zone}, cb) {
         const regexp = /{ALZONE\d=(.*)}/;
         this.reqToSend(`${api.zone.get.all}${zone}`, (res) => {
-            if (typeof cb == 'function') cb(this._parseReturnValues(res, regexp, api.zone.get))
+            if (typeof cb == 'function') cb(this._parseReturnValues(res, regexp, api.zone.get));
         });
     }
 
     /**
-     * Sends a get command to the QtPro unit and returns a parsed response object
+     * Sends a get command to the Qt Pro unit and returns a parsed response object
      * @param {Number} zone - The 0-indexed zone number the parameter will be set for
      * @param {string} parameter - The parameter to get. Valid values are in api.zone.get
      * @param {getOneCallback} [cb] - The callback to run against the response
      */
     getZoneParam({zone, parameter}, cb) {
         if (!(parameter in api.zone.get)) {
-            throw new Error(`Invalid zone parameter to get: ${parameter}`)
+            throw new Error(`Invalid zone parameter to get: ${parameter}`);
         }
         this._get({type:'zone', zoneID: zone, parameter}, (res) => {
-            cb(res)
+            cb(res);
         });
     }
 
     /**
-     * Sends a set command to the QtPro unit
+     * Sends a set command to the Qt Pro unit
      * @param {Number} zone - The 0-indexed zone number the parameter will be set for
      * @param {string} parameter - The parameter to set. Valid values are in api.zone.set
      * @param {string} value - The value the parameter will be set to
@@ -402,7 +401,7 @@ class QTPro extends EventEmitter {
      */
     setZoneParam({zone, parameter, value}, cb) {
         if (!(parameter in api.zone.set)) {
-            throw new Error(`Invalid zone parameter to set: ${parameter}`)
+            throw new Error(`Invalid zone parameter to set: ${parameter}`);
         }
         this._set({type:'zone', zoneID: zone, parameter, argument: value}, (parsed) => {
             if (typeof cb == 'function') cb(parsed[parameter] == value);

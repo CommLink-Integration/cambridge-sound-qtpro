@@ -22,7 +22,7 @@ module.exports = class QTPro extends EventEmitter {
         this.ip = ip;
         this.port = port;
         this._reconnect = reconnect;
-        this._reconnectTimeout = 5000;
+        this._reconnectTimeout = 20000;
 
         this.status = 'disconnected';
 

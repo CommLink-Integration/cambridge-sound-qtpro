@@ -33,7 +33,7 @@ module.exports = class QTPro extends EventEmitter {
             this.model = model;
             this.numZones = 6;
         } else {
-            throw new Error (`Not a valid Qt Pro model identifier: ${model}`);
+            throw new Error(`Not a valid Qt Pro model identifier: ${model}`);
         }
 
         this._keepAliveInterval = null;
@@ -203,18 +203,18 @@ module.exports = class QTPro extends EventEmitter {
             apiSection = api.system.get;
         } else if (type == 'zone') {
             if (!zoneID) {
-                cb(new Error ('zoneID not defined'), null);
+                cb(new Error('zoneID not defined'), null);
                 return;
             }
             if (zoneID > this.numZones - 1) {
-                cb(new Error ('zoneID greater than number of zones'), null);
+                cb(new Error('zoneID greater than number of zones'), null);
                 return;
             }
             header = api.headers.ZONE_GET;
             apiSection = api.zone.get;
         } else {
-            // This shouldn't be reached 
-            cb(new Error ('Invalid type argument. Must be "system" or "zone"'), null);
+            // This shouldn't be reached
+            cb(new Error('Invalid type argument. Must be "system" or "zone"'), null);
             return;
         }
 
@@ -244,18 +244,18 @@ module.exports = class QTPro extends EventEmitter {
             apiSection = api.system.set;
         } else if (type == 'zone') {
             if (!zoneID) {
-                cb(new Error ('zoneID not defined'), null);
+                cb(new Error('zoneID not defined'), null);
                 return;
             }
             if (zoneID > this.numZones - 1) {
-                cb(new Error ('zoneID greater than number of zones'), null);
+                cb(new Error('zoneID greater than number of zones'), null);
                 return;
             }
             header = api.headers.ZONE_SET;
             apiSection = api.zone.set;
         } else {
-            // This shouldn't be reached 
-            cb(new Error ('Invalid type argument. Must be "system" or "zone"'), null);
+            // This shouldn't be reached
+            cb(new Error('Invalid type argument. Must be "system" or "zone"'), null);
             return;
         }
         const argString = argument !== undefined ? `=${argument}` : '';
@@ -341,7 +341,7 @@ module.exports = class QTPro extends EventEmitter {
     getAllSystemParams(cb = () => {}) {
         const regexp = /{ALSYS=(.*)}/;
         if (typeof cb !== 'function') {
-            throw new Error ('Callback not of function type');
+            throw new Error('Callback not of function type');
         }
         this.reqToSend(api.system.get.all, (err, res) => {
             if (err) cb(err, null);
@@ -356,10 +356,10 @@ module.exports = class QTPro extends EventEmitter {
      */
     getSystemParam({ parameter }, cb = () => {}) {
         if (typeof cb !== 'function') {
-            throw new Error ('Callback not of function type');
+            throw new Error('Callback not of function type');
         }
         if (!(parameter in api.system.get)) {
-            cb(new Error (`Invalid system parameter to get: ${parameter}`), null);
+            cb(new Error(`Invalid system parameter to get: ${parameter}`), null);
         }
         this._get({ type: 'system', parameter }, (err, res) => {
             if (err) cb(err, null);
@@ -375,10 +375,10 @@ module.exports = class QTPro extends EventEmitter {
      */
     setSystemParam({ parameter, value }, cb = () => {}) {
         if (typeof cb !== 'function') {
-            throw new Error ('Callback not of function type');
+            throw new Error('Callback not of function type');
         }
         if (!(parameter in api.system.set)) {
-            cb(new Error (`Invalid system parameter to set: ${parameter}`), null);
+            cb(new Error(`Invalid system parameter to set: ${parameter}`), null);
         }
 
         this._set({ type: 'system', parameter, argument: value }, (err, parsed) => {
@@ -396,7 +396,7 @@ module.exports = class QTPro extends EventEmitter {
      */
     getAllZoneParams({ zone }, cb = () => {}) {
         if (typeof cb !== 'function') {
-            throw new Error ('Callback not of function type');
+            throw new Error('Callback not of function type');
         }
         const regexp = /{ALZONE\d=(.*)}/;
         this.reqToSend(`${api.zone.get.all}${zone}`, (err, res) => {
@@ -413,10 +413,10 @@ module.exports = class QTPro extends EventEmitter {
      */
     getZoneParam({ zone, parameter }, cb = () => {}) {
         if (typeof cb !== 'function') {
-            throw new Error ('Callback not of function type');
+            throw new Error('Callback not of function type');
         }
         if (!(parameter in api.zone.get)) {
-            cb(new Error (`Invalid zone parameter to get: ${parameter}`), null);
+            cb(new Error(`Invalid zone parameter to get: ${parameter}`), null);
         }
 
         this._get({ type: 'zone', zoneID: zone, parameter }, (err, res) => {
@@ -434,16 +434,16 @@ module.exports = class QTPro extends EventEmitter {
      */
     setZoneParam({ zone, parameter, value }, cb = () => {}) {
         if (typeof cb !== 'function') {
-            throw new Error ('Callback not of function type');
+            throw new Error('Callback not of function type');
         }
         if (!(parameter in api.zone.set)) {
-            cb(new Error (`Invalid zone parameter to set: ${parameter}`), null);
+            cb(new Error(`Invalid zone parameter to set: ${parameter}`), null);
         }
-        
+
         this._set({ type: 'zone', zoneID: zone, parameter, argument: value }, (err, parsed) => {
             if (err) cb(err, null);
             else cb(null, parsed[parameter] == value);
         });
     }
     // #endregion Zone Parameters
-}
+};
